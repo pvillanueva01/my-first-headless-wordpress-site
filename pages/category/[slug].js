@@ -6,7 +6,30 @@ import Layout from "../../components/Layout";
 import PostsList from "../../components/PostsList";
 
 // Dummy data
-import { category } from "../../dummy-data";
+//import { category } from "../../dummy-data";
+
+const GET_CATEGORY = gql`
+query getCategory($slugId: ID!) {
+  category(id: $slugId, idType: SLUG) {
+    name
+    posts {
+      nodes {
+        databaseId
+        title
+        excerpt
+        uri
+        featuredImage {
+          node {
+            sourceUrl
+            altText
+          }
+        }
+      }
+    }
+  }
+}
+
+`;
 
 export default function SingleCategory({ category }) {
   return (
@@ -26,6 +49,13 @@ export function getStaticPaths() {
 
 export async function getStaticProps(context) {
   const { slug } = context.params;
+
+  const response = await client.query({
+    query: GET_CATEGORY,
+    variables: {slugId: slug},
+  });
+
+  const category = response.data.category;
 
   if (!category) {
     return { notFound: true };
